@@ -43,6 +43,7 @@ pub struct Unparsed(pub(crate) String);
 pub enum SyntaxError {
     UnexpectedToken { token: char, expected: &'static str },
     UnexpectedEOL { expected: &'static str },
+    DuplicateIdentifier(String),
 }
 
 impl AST {

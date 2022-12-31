@@ -55,6 +55,10 @@ fn it_works() {
                 comment: None
             },
             Line::Invalid {
+                error: SyntaxError::DuplicateIdentifier("nodejs".to_string()),
+                unparsed: Unparsed::new("nodejs      12   "),
+            },
+            Line::Invalid {
                 error: SyntaxError::UnexpectedToken {
                     token: 'i',
                     expected: "EOL,Comment",
@@ -64,6 +68,19 @@ fn it_works() {
             Line::Empty {
                 whitespace: None,
                 comment: Some(Unparsed::new(" asda"))
+            },
+            Line::Invalid {
+                error: SyntaxError::UnexpectedToken {
+                    token: '#',
+                    expected: "Version",
+                },
+                unparsed: Unparsed::new("rust# comment"),
+            },
+            Line::Invalid {
+                error: SyntaxError::UnexpectedEOL {
+                    expected: "Version",
+                },
+                unparsed: Unparsed::new("rust"),
             },
             Line::Definition {
                 tool: Tool::new(
@@ -75,6 +92,16 @@ fn it_works() {
                 ),
                 whitespace: None,
                 comment: Some(Unparsed::new("ay"))
+            },
+            Line::Invalid {
+                error: SyntaxError::DuplicateIdentifier("lua".to_string()),
+                unparsed: Unparsed::new("lua   "),
+            },
+            Line::Invalid {
+                error: SyntaxError::UnexpectedEOL {
+                    expected: "Version"
+                },
+                unparsed: Unparsed::new("golang "),
             },
         ]),
     )
