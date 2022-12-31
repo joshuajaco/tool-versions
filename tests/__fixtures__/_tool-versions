@@ -3,6 +3,11 @@ ruby    12       19
    ## foo ## bar 
 rust 4      
          
+nodejs      12   
  ignored 
 # asda
+rust# comment
+rust
 lua 19      20#ay
+lua   
+golang 
