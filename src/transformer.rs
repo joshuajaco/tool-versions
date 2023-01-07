@@ -1,6 +1,6 @@
-use crate::ast::{Identifier, Line, Tool, Version, Whitespace, AST};
+use crate::ast::{Identifier, Line, StringValue, Tool, Version, Whitespace, AST};
 
-pub fn set_versions(ast: &AST, name: Identifier, versions: Vec<Identifier>) -> AST {
+pub fn set_versions(ast: &AST, name: Identifier, versions: Vec<StringValue>) -> AST {
     let versions: Vec<Version> = versions
         .iter()
         .map(|version| Version {

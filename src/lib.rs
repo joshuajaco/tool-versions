@@ -56,7 +56,7 @@ impl ToolVersions {
             ast::Identifier::new(tool_name),
             versions
                 .iter()
-                .map(|version| ast::Identifier::new(version))
+                .map(|version| ast::StringValue::new(version))
                 .collect(),
         );
     }

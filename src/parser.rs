@@ -1,4 +1,7 @@
-use crate::ast::{Identifier, Line, SyntaxError, Tool, Unparsed, Version, Whitespace, AST};
+use crate::ast::{
+    Identifier, Line, StringValue, SyntaxError, Tool, Unparsed, Version, Whitespace, AST,
+};
+
 use std::{collections::HashSet, fs, io, path::Path, str::Chars};
 
 pub fn parse_file<P: AsRef<Path>>(path: P) -> io::Result<AST> {
@@ -74,6 +77,13 @@ fn parse_definition(
             },
             unparsed: Unparsed(line.to_string()),
         },
+        Some(token) if !token.is_whitespace() => Line::Invalid {
+            error: SyntaxError::UnexpectedToken {
+                token,
+                expected: "Whitespace",
+            },
+            unparsed: Unparsed(line.to_string()),
+        },
         Some(next) => {
             if unique_identifiers.contains(&tool_name) {
                 return Line::Invalid {
@@ -124,10 +134,10 @@ fn parse_definition(
                     Some(next) => {
                         let mut version = String::from(next);
 
-                        match take_identifier(chars, &mut version) {
+                        match take_string_value(chars, &mut version) {
                             None => {
                                 versions.push(Version {
-                                    value: Identifier(version),
+                                    value: StringValue(version),
                                     left_padding: Whitespace(whitespace),
                                 });
 
@@ -139,7 +149,7 @@ fn parse_definition(
                             }
                             Some(next) => {
                                 versions.push(Version {
-                                    value: Identifier(version),
+                                    value: StringValue(version),
                                     left_padding: Whitespace(whitespace),
                                 });
 
@@ -166,6 +176,14 @@ fn take_whitespace(chars: &mut Chars, whitespace: &mut String) -> Option<char> {
 }
 
 fn take_identifier(chars: &mut Chars, whitespace: &mut String) -> Option<char> {
+    take_until(
+        chars,
+        whitespace,
+        |c| !matches!(c, '0'..='9' | 'A'..='Z' | 'a'..='z' | '.' | '-' | '_'),
+    )
+}
+
+fn take_string_value(chars: &mut Chars, whitespace: &mut String) -> Option<char> {
     take_until(chars, whitespace, |c| c.is_whitespace() || c == '#')
 }
 
