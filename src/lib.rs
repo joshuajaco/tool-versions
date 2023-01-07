@@ -21,6 +21,17 @@ impl ToolVersions {
         Ok(Self::from(&input))
     }
 
+    pub fn errors(&self) -> Vec<&ast::SyntaxError> {
+        self.ast
+            .0
+            .iter()
+            .filter_map(|line| match line {
+                ast::Line::Invalid { error, .. } => Some(error),
+                _ => None,
+            })
+            .collect()
+    }
+
     pub fn versions(&self, tool_name: &str) -> Option<Vec<String>> {
         self.ast
             .0

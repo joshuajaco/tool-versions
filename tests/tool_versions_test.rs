@@ -1,5 +1,5 @@
 use std::{env, fs, path::Path};
-use tool_versions::ToolVersions;
+use tool_versions::{ast, ToolVersions};
 
 #[test]
 fn it_works() {
@@ -21,6 +21,28 @@ fn it_works() {
     assert_eq!(
         tools.versions("lua"),
         Some(vec!["19".to_string(), "20".to_string()])
+    );
+
+    assert_eq!(
+        tools.errors(),
+        vec![
+            &ast::SyntaxError::DuplicateIdentifier("nodejs".to_string()),
+            &ast::SyntaxError::UnexpectedToken {
+                token: 'i',
+                expected: "EOL,Comment",
+            },
+            &ast::SyntaxError::UnexpectedToken {
+                token: '#',
+                expected: "Version",
+            },
+            &ast::SyntaxError::UnexpectedEOL {
+                expected: "Version",
+            },
+            &ast::SyntaxError::DuplicateIdentifier("lua".to_string()),
+            &ast::SyntaxError::UnexpectedEOL {
+                expected: "Version"
+            }
+        ]
     );
 
     tools.set_versions("nodejs", vec!["8", "9", "10"]);
