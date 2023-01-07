@@ -111,7 +111,7 @@ pub enum IdentifierConstructorError {
 impl Identifier {
     pub fn new(value: &str) -> Self {
         match Self::try_new(value) {
-            Ok(version) => version,
+            Ok(identifier) => identifier,
             Err(e) => panic!("{:?}", e),
         }
     }
@@ -133,7 +133,7 @@ pub enum WhitespaceConstructorError {
 impl Whitespace {
     pub fn new(value: &str) -> Self {
         match Self::try_new(value) {
-            Ok(version) => version,
+            Ok(whitespace) => whitespace,
             Err(e) => panic!("{:?}", e),
         }
     }
@@ -158,7 +158,7 @@ pub enum UnparsedConstructorError {
 impl Unparsed {
     pub fn new(value: &str) -> Self {
         match Self::try_new(value) {
-            Ok(version) => version,
+            Ok(unparsed) => unparsed,
             Err(e) => panic!("{:?}", e),
         }
     }
