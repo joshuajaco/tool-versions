@@ -225,14 +225,6 @@ fn it_sets_new_versions() {
         AST::new(vec![
             Line::Definition {
                 tool: Tool::new(
-                    Identifier::new("golang"),
-                    vec![Version::new(Identifier::new("1337"), Whitespace::new(" ")),]
-                ),
-                whitespace: None,
-                comment: None
-            },
-            Line::Definition {
-                tool: Tool::new(
                     Identifier::new("nodejs"),
                     vec![
                         Version::new(Identifier::new("18.12"), Whitespace::new("  ")),
@@ -317,6 +309,14 @@ fn it_sets_new_versions() {
                     expected: "Version"
                 },
                 unparsed: Unparsed::new("golang "),
+            },
+            Line::Definition {
+                tool: Tool::new(
+                    Identifier::new("golang"),
+                    vec![Version::new(Identifier::new("1337"), Whitespace::new(" ")),]
+                ),
+                whitespace: None,
+                comment: None
             },
         ]),
     )

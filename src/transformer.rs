@@ -31,14 +31,11 @@ pub fn set_versions(ast: &AST, name: Identifier, versions: Vec<Identifier>) -> A
             return AST(lines);
         }
 
-        lines.insert(
-            0,
-            Line::Definition {
-                tool: Tool { name, versions },
-                whitespace: None,
-                comment: None,
-            },
-        );
+        lines.push(Line::Definition {
+            tool: Tool { name, versions },
+            whitespace: None,
+            comment: None,
+        });
 
         return AST(lines);
     }
