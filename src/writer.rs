@@ -16,7 +16,7 @@ pub fn write(ast: &AST) -> String {
 }
 
 impl Line {
-    pub fn to_string(&self) -> String {
+    fn to_string(&self) -> String {
         match self {
             Line::Definition {
                 tool,
@@ -59,7 +59,7 @@ impl Line {
 }
 
 impl Tool {
-    pub fn to_string(&self) -> String {
+    fn to_string(&self) -> String {
         let mut s = String::from(&self.name.0);
 
         let versions: Vec<String> = self

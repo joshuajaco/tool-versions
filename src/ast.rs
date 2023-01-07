@@ -49,6 +49,10 @@ pub enum SyntaxError {
     DuplicateIdentifier(String),
 }
 
+pub trait Value {
+    fn is_valid_char(c: char) -> bool;
+}
+
 impl AST {
     pub fn new(lines: Vec<Line>) -> Self {
         AST(lines)
@@ -57,7 +61,6 @@ impl AST {
 
 #[derive(Debug)]
 pub enum ToolConstructorError {
-    InvalidName(String),
     MissingVersions,
 }
 
@@ -106,6 +109,12 @@ impl Version {
     }
 }
 
+impl Value for Identifier {
+    fn is_valid_char(c: char) -> bool {
+        matches!(c, '0'..='9' | 'A'..='Z' | 'a'..='z' | '.'| '-'| '_')
+    }
+}
+
 #[derive(Debug)]
 pub enum IdentifierConstructorError {
     InvalidValue(String),
@@ -120,14 +129,17 @@ impl Identifier {
     }
 
     pub fn try_new(value: &str) -> Result<Self, IdentifierConstructorError> {
-        if !value
-            .chars()
-            .all(|c| matches!(c, '0'..='9' | 'A'..='Z' | 'a'..='z' | '.'| '-'| '_'))
-        {
+        if !value.chars().all(Self::is_valid_char) {
             return Err(IdentifierConstructorError::InvalidValue(value.to_string()));
         }
 
         Ok(Self(value.to_string()))
+    }
+}
+
+impl Value for StringValue {
+    fn is_valid_char(c: char) -> bool {
+        !c.is_whitespace() && c != '#'
     }
 }
 
@@ -145,11 +157,17 @@ impl StringValue {
     }
 
     pub fn try_new(value: &str) -> Result<Self, StringValueConstructorError> {
-        if value.chars().any(|c| c.is_whitespace() || c == '#') {
+        if !value.chars().all(Self::is_valid_char) {
             return Err(StringValueConstructorError::InvalidValue(value.to_string()));
         }
 
         Ok(Self(value.to_string()))
+    }
+}
+
+impl Value for Whitespace {
+    fn is_valid_char(c: char) -> bool {
+        c.is_whitespace() && c != '\n' && c != '\r'
     }
 }
 
@@ -167,10 +185,7 @@ impl Whitespace {
     }
 
     pub fn try_new(value: &str) -> Result<Self, WhitespaceConstructorError> {
-        if value
-            .chars()
-            .any(|c| !c.is_whitespace() || c == '\n' || c == '\r')
-        {
+        if !value.chars().all(Self::is_valid_char) {
             return Err(WhitespaceConstructorError::InvalidValue(value.to_string()));
         }
 
