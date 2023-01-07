@@ -2,6 +2,7 @@ use std::{fs, io, path::Path};
 
 pub mod ast;
 pub mod parser;
+pub mod transformer;
 
 pub struct ToolVersions {
     ast: ast::AST,
@@ -29,5 +30,9 @@ impl ToolVersions {
             })
             .find(|tool| tool.name.0.eq(tool_name))
             .map(|tool| tool.versions.iter().map(|v| v.value.0.clone()).collect())
+    }
+
+    pub fn set_versions(&mut self, tool_name: &str, versions: Vec<&str>) {
+        self.ast = transformer::set_versions(&self.ast, tool_name, versions);
     }
 }

@@ -1,7 +1,7 @@
 #[derive(Debug, PartialEq)]
 pub struct AST(pub(crate) Vec<Line>);
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Line {
     Definition {
         tool: Tool,
@@ -18,28 +18,28 @@ pub enum Line {
     },
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Tool {
     pub(crate) name: Identifier,
     pub(crate) versions: Vec<Version>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Version {
     pub(crate) value: Identifier,
     pub(crate) left_padding: Whitespace,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Identifier(pub(crate) String);
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Whitespace(pub(crate) String);
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Unparsed(pub(crate) String);
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum SyntaxError {
     UnexpectedToken { token: char, expected: &'static str },
     UnexpectedEOL { expected: &'static str },
