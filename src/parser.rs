@@ -1,5 +1,5 @@
 use crate::ast::{
-    Identifier, Line, StringValue, SyntaxError, Tool, Unparsed, Version, Whitespace, AST,
+    Identifier, Line, StringValue, SyntaxError, Tool, Unparsed, Value, Version, Whitespace, AST,
 };
 
 use std::{collections::HashSet, fs, io, path::Path, str::Chars};
@@ -33,7 +33,7 @@ fn parse_line(line: &str, unique_identifiers: &mut HashSet<String>) -> Line {
         Some(first) if first.is_whitespace() => {
             let mut whitespace = String::from(first);
 
-            match take_whitespace(&mut chars, &mut whitespace) {
+            match take::<Whitespace>(&mut chars, &mut whitespace) {
                 None => Line::Empty {
                     whitespace: Some(Whitespace(whitespace)),
                     comment: None,
@@ -63,7 +63,7 @@ fn parse_definition(
 ) -> Line {
     let mut tool_name = String::from(first);
 
-    match take_identifier(chars, &mut tool_name) {
+    match take::<Identifier>(chars, &mut tool_name) {
         None => Line::Invalid {
             error: SyntaxError::UnexpectedEOL {
                 expected: "Version",
@@ -99,7 +99,7 @@ fn parse_definition(
             let mut whitespace = String::from(next);
 
             loop {
-                match take_whitespace(chars, &mut whitespace) {
+                match take::<Whitespace>(chars, &mut whitespace) {
                     None if versions.len() == 0 => {
                         return Line::Invalid {
                             error: SyntaxError::UnexpectedEOL {
@@ -134,7 +134,7 @@ fn parse_definition(
                     Some(next) => {
                         let mut version = String::from(next);
 
-                        match take_string_value(chars, &mut version) {
+                        match take::<StringValue>(chars, &mut version) {
                             None => {
                                 versions.push(Version {
                                     value: StringValue(version),
@@ -171,28 +171,15 @@ fn parse_definition(
     }
 }
 
-fn take_whitespace(chars: &mut Chars, whitespace: &mut String) -> Option<char> {
-    take_until(chars, whitespace, |c| !c.is_whitespace())
-}
-
-fn take_identifier(chars: &mut Chars, whitespace: &mut String) -> Option<char> {
-    take_until(
-        chars,
-        whitespace,
-        |c| !matches!(c, '0'..='9' | 'A'..='Z' | 'a'..='z' | '.' | '-' | '_'),
-    )
-}
-
-fn take_string_value(chars: &mut Chars, whitespace: &mut String) -> Option<char> {
-    take_until(chars, whitespace, |c| c.is_whitespace() || c == '#')
-}
-
-fn take_until(chars: &mut Chars, output: &mut String, cb: fn(char) -> bool) -> Option<char> {
+fn take<V>(chars: &mut Chars, output: &mut String) -> Option<char>
+where
+    V: Value,
+{
     loop {
         match chars.next() {
             None => return None,
             Some(next) => {
-                if cb(next) {
+                if !V::is_valid_char(next) {
                     return Some(next);
                 } else {
                     output.push(next);
