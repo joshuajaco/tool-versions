@@ -1,4 +1,4 @@
-use std::{fs, io, path::Path};
+use std::{io, path::Path};
 
 pub mod ast;
 pub mod parser;
@@ -17,8 +17,8 @@ impl ToolVersions {
     }
 
     pub fn from_file<P: AsRef<Path>>(path: P) -> io::Result<Self> {
-        let input = fs::read_to_string(path)?;
-        Ok(Self::from(&input))
+        let ast = parser::parse_file(path)?;
+        Ok(ToolVersions { ast })
     }
 
     pub fn errors(&self) -> Vec<&ast::SyntaxError> {
