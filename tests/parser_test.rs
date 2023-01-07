@@ -1,5 +1,7 @@
 use std::{fs, path::Path};
-use tool_versions::ast::{Identifier, Line, SyntaxError, Tool, Unparsed, Version, Whitespace, AST};
+use tool_versions::ast::{
+    Identifier, Line, StringValue, SyntaxError, Tool, Unparsed, Version, Whitespace, AST,
+};
 use tool_versions::parser;
 
 #[test]
@@ -20,8 +22,8 @@ fn it_works() {
                 tool: Tool::new(
                     Identifier::new("nodejs"),
                     vec![
-                        Version::new(Identifier::new("18.12"), Whitespace::new("  ")),
-                        Version::new(Identifier::new("system"), Whitespace::new("    ")),
+                        Version::new(StringValue::new("18.12"), Whitespace::new("  ")),
+                        Version::new(StringValue::new("system"), Whitespace::new("    ")),
                     ]
                 ),
                 whitespace: Some(Whitespace::new("  ")),
@@ -31,8 +33,8 @@ fn it_works() {
                 tool: Tool::new(
                     Identifier::new("ruby"),
                     vec![
-                        Version::new(Identifier::new("12"), Whitespace::new("    ")),
-                        Version::new(Identifier::new("19"), Whitespace::new("       ")),
+                        Version::new(StringValue::new("12"), Whitespace::new("    ")),
+                        Version::new(StringValue::new("19"), Whitespace::new("       ")),
                     ]
                 ),
                 whitespace: None,
@@ -45,7 +47,7 @@ fn it_works() {
             Line::Definition {
                 tool: Tool::new(
                     Identifier::new("rust"),
-                    vec![Version::new(Identifier::new("4"), Whitespace::new(" ")),]
+                    vec![Version::new(StringValue::new("4"), Whitespace::new(" ")),]
                 ),
                 whitespace: Some(Whitespace::new("      ")),
                 comment: None
@@ -77,6 +79,13 @@ fn it_works() {
                 unparsed: Unparsed::new("rust# comment"),
             },
             Line::Invalid {
+                error: SyntaxError::UnexpectedToken {
+                    token: '+',
+                    expected: "Whitespace",
+                },
+                unparsed: Unparsed::new("inva+lid 20"),
+            },
+            Line::Invalid {
                 error: SyntaxError::UnexpectedEOL {
                     expected: "Version",
                 },
@@ -86,8 +95,8 @@ fn it_works() {
                 tool: Tool::new(
                     Identifier::new("lua"),
                     vec![
-                        Version::new(Identifier::new("19"), Whitespace::new(" ")),
-                        Version::new(Identifier::new("20"), Whitespace::new("      ")),
+                        Version::new(StringValue::new("19"), Whitespace::new(" ")),
+                        Version::new(StringValue::new("20"), Whitespace::new("      ")),
                     ]
                 ),
                 whitespace: None,

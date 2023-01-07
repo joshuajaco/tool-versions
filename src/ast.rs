@@ -26,12 +26,15 @@ pub struct Tool {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Version {
-    pub(crate) value: Identifier,
+    pub(crate) value: StringValue,
     pub(crate) left_padding: Whitespace,
 }
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Identifier(pub(crate) String);
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct StringValue(pub(crate) String);
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Whitespace(pub(crate) String);
@@ -81,7 +84,7 @@ pub enum VersionConstructorError {
 }
 
 impl Version {
-    pub fn new(value: Identifier, left_padding: Whitespace) -> Self {
+    pub fn new(value: StringValue, left_padding: Whitespace) -> Self {
         match Self::try_new(value, left_padding) {
             Ok(version) => version,
             Err(e) => panic!("{:?}", e),
@@ -89,7 +92,7 @@ impl Version {
     }
 
     pub fn try_new(
-        value: Identifier,
+        value: StringValue,
         left_padding: Whitespace,
     ) -> Result<Self, VersionConstructorError> {
         if left_padding.0.len() == 0 {
@@ -117,8 +120,33 @@ impl Identifier {
     }
 
     pub fn try_new(value: &str) -> Result<Self, IdentifierConstructorError> {
-        if value.chars().any(|c| c.is_whitespace() || c == '#') {
+        if !value
+            .chars()
+            .all(|c| matches!(c, '0'..='9' | 'A'..='Z' | 'a'..='z' | '.'| '-'| '_'))
+        {
             return Err(IdentifierConstructorError::InvalidValue(value.to_string()));
+        }
+
+        Ok(Self(value.to_string()))
+    }
+}
+
+#[derive(Debug)]
+pub enum StringValueConstructorError {
+    InvalidValue(String),
+}
+
+impl StringValue {
+    pub fn new(value: &str) -> Self {
+        match Self::try_new(value) {
+            Ok(string_value) => string_value,
+            Err(e) => panic!("{:?}", e),
+        }
+    }
+
+    pub fn try_new(value: &str) -> Result<Self, StringValueConstructorError> {
+        if value.chars().any(|c| c.is_whitespace() || c == '#') {
+            return Err(StringValueConstructorError::InvalidValue(value.to_string()));
         }
 
         Ok(Self(value.to_string()))

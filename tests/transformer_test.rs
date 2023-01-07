@@ -1,6 +1,8 @@
 use std::path::Path;
 
-use tool_versions::ast::{Identifier, Line, SyntaxError, Tool, Unparsed, Version, Whitespace, AST};
+use tool_versions::ast::{
+    Identifier, Line, StringValue, SyntaxError, Tool, Unparsed, Version, Whitespace, AST,
+};
 use tool_versions::{parser, transformer};
 
 #[test]
@@ -11,9 +13,9 @@ fn it_sets_more_versions() {
         &ast,
         Identifier::new("nodejs"),
         vec![
-            Identifier::new("7"),
-            Identifier::new("9"),
-            Identifier::new("10"),
+            StringValue::new("7"),
+            StringValue::new("9"),
+            StringValue::new("10"),
         ],
     );
 
@@ -24,9 +26,9 @@ fn it_sets_more_versions() {
                 tool: Tool::new(
                     Identifier::new("nodejs"),
                     vec![
-                        Version::new(Identifier::new("7"), Whitespace::new("  ")),
-                        Version::new(Identifier::new("9"), Whitespace::new("    ")),
-                        Version::new(Identifier::new("10"), Whitespace::new(" ")),
+                        Version::new(StringValue::new("7"), Whitespace::new("  ")),
+                        Version::new(StringValue::new("9"), Whitespace::new("    ")),
+                        Version::new(StringValue::new("10"), Whitespace::new(" ")),
                     ]
                 ),
                 whitespace: Some(Whitespace::new("  ")),
@@ -36,8 +38,8 @@ fn it_sets_more_versions() {
                 tool: Tool::new(
                     Identifier::new("ruby"),
                     vec![
-                        Version::new(Identifier::new("12"), Whitespace::new("    ")),
-                        Version::new(Identifier::new("19"), Whitespace::new("       ")),
+                        Version::new(StringValue::new("12"), Whitespace::new("    ")),
+                        Version::new(StringValue::new("19"), Whitespace::new("       ")),
                     ]
                 ),
                 whitespace: None,
@@ -50,7 +52,7 @@ fn it_sets_more_versions() {
             Line::Definition {
                 tool: Tool::new(
                     Identifier::new("rust"),
-                    vec![Version::new(Identifier::new("4"), Whitespace::new(" ")),]
+                    vec![Version::new(StringValue::new("4"), Whitespace::new(" ")),]
                 ),
                 whitespace: Some(Whitespace::new("      ")),
                 comment: None
@@ -82,6 +84,13 @@ fn it_sets_more_versions() {
                 unparsed: Unparsed::new("rust# comment"),
             },
             Line::Invalid {
+                error: SyntaxError::UnexpectedToken {
+                    token: '+',
+                    expected: "Whitespace",
+                },
+                unparsed: Unparsed::new("inva+lid 20"),
+            },
+            Line::Invalid {
                 error: SyntaxError::UnexpectedEOL {
                     expected: "Version",
                 },
@@ -91,8 +100,8 @@ fn it_sets_more_versions() {
                 tool: Tool::new(
                     Identifier::new("lua"),
                     vec![
-                        Version::new(Identifier::new("19"), Whitespace::new(" ")),
-                        Version::new(Identifier::new("20"), Whitespace::new("      ")),
+                        Version::new(StringValue::new("19"), Whitespace::new(" ")),
+                        Version::new(StringValue::new("20"), Whitespace::new("      ")),
                     ]
                 ),
                 whitespace: None,
@@ -117,7 +126,7 @@ fn it_sets_less_versions() {
     let ast = parser::parse_file(Path::new("tests/__fixtures__/_tool-versions")).unwrap();
 
     let result =
-        transformer::set_versions(&ast, Identifier::new("ruby"), vec![Identifier::new("14")]);
+        transformer::set_versions(&ast, Identifier::new("ruby"), vec![StringValue::new("14")]);
 
     assert_eq!(
         result,
@@ -126,8 +135,8 @@ fn it_sets_less_versions() {
                 tool: Tool::new(
                     Identifier::new("nodejs"),
                     vec![
-                        Version::new(Identifier::new("18.12"), Whitespace::new("  ")),
-                        Version::new(Identifier::new("system"), Whitespace::new("    ")),
+                        Version::new(StringValue::new("18.12"), Whitespace::new("  ")),
+                        Version::new(StringValue::new("system"), Whitespace::new("    ")),
                     ]
                 ),
                 whitespace: Some(Whitespace::new("  ")),
@@ -136,7 +145,10 @@ fn it_sets_less_versions() {
             Line::Definition {
                 tool: Tool::new(
                     Identifier::new("ruby"),
-                    vec![Version::new(Identifier::new("14"), Whitespace::new("    ")),]
+                    vec![Version::new(
+                        StringValue::new("14"),
+                        Whitespace::new("    ")
+                    ),]
                 ),
                 whitespace: None,
                 comment: None
@@ -148,7 +160,7 @@ fn it_sets_less_versions() {
             Line::Definition {
                 tool: Tool::new(
                     Identifier::new("rust"),
-                    vec![Version::new(Identifier::new("4"), Whitespace::new(" ")),]
+                    vec![Version::new(StringValue::new("4"), Whitespace::new(" ")),]
                 ),
                 whitespace: Some(Whitespace::new("      ")),
                 comment: None
@@ -180,6 +192,13 @@ fn it_sets_less_versions() {
                 unparsed: Unparsed::new("rust# comment"),
             },
             Line::Invalid {
+                error: SyntaxError::UnexpectedToken {
+                    token: '+',
+                    expected: "Whitespace",
+                },
+                unparsed: Unparsed::new("inva+lid 20"),
+            },
+            Line::Invalid {
                 error: SyntaxError::UnexpectedEOL {
                     expected: "Version",
                 },
@@ -189,8 +208,8 @@ fn it_sets_less_versions() {
                 tool: Tool::new(
                     Identifier::new("lua"),
                     vec![
-                        Version::new(Identifier::new("19"), Whitespace::new(" ")),
-                        Version::new(Identifier::new("20"), Whitespace::new("      ")),
+                        Version::new(StringValue::new("19"), Whitespace::new(" ")),
+                        Version::new(StringValue::new("20"), Whitespace::new("      ")),
                     ]
                 ),
                 whitespace: None,
@@ -217,7 +236,7 @@ fn it_sets_new_versions() {
     let result = transformer::set_versions(
         &ast,
         Identifier::new("golang"),
-        vec![Identifier::new("1337")],
+        vec![StringValue::new("1337")],
     );
 
     assert_eq!(
@@ -227,8 +246,8 @@ fn it_sets_new_versions() {
                 tool: Tool::new(
                     Identifier::new("nodejs"),
                     vec![
-                        Version::new(Identifier::new("18.12"), Whitespace::new("  ")),
-                        Version::new(Identifier::new("system"), Whitespace::new("    ")),
+                        Version::new(StringValue::new("18.12"), Whitespace::new("  ")),
+                        Version::new(StringValue::new("system"), Whitespace::new("    ")),
                     ]
                 ),
                 whitespace: Some(Whitespace::new("  ")),
@@ -238,8 +257,8 @@ fn it_sets_new_versions() {
                 tool: Tool::new(
                     Identifier::new("ruby"),
                     vec![
-                        Version::new(Identifier::new("12"), Whitespace::new("    ")),
-                        Version::new(Identifier::new("19"), Whitespace::new("       ")),
+                        Version::new(StringValue::new("12"), Whitespace::new("    ")),
+                        Version::new(StringValue::new("19"), Whitespace::new("       ")),
                     ]
                 ),
                 whitespace: None,
@@ -252,7 +271,7 @@ fn it_sets_new_versions() {
             Line::Definition {
                 tool: Tool::new(
                     Identifier::new("rust"),
-                    vec![Version::new(Identifier::new("4"), Whitespace::new(" ")),]
+                    vec![Version::new(StringValue::new("4"), Whitespace::new(" ")),]
                 ),
                 whitespace: Some(Whitespace::new("      ")),
                 comment: None
@@ -284,6 +303,13 @@ fn it_sets_new_versions() {
                 unparsed: Unparsed::new("rust# comment"),
             },
             Line::Invalid {
+                error: SyntaxError::UnexpectedToken {
+                    token: '+',
+                    expected: "Whitespace",
+                },
+                unparsed: Unparsed::new("inva+lid 20"),
+            },
+            Line::Invalid {
                 error: SyntaxError::UnexpectedEOL {
                     expected: "Version",
                 },
@@ -293,8 +319,8 @@ fn it_sets_new_versions() {
                 tool: Tool::new(
                     Identifier::new("lua"),
                     vec![
-                        Version::new(Identifier::new("19"), Whitespace::new(" ")),
-                        Version::new(Identifier::new("20"), Whitespace::new("      ")),
+                        Version::new(StringValue::new("19"), Whitespace::new(" ")),
+                        Version::new(StringValue::new("20"), Whitespace::new("      ")),
                     ]
                 ),
                 whitespace: None,
@@ -313,7 +339,7 @@ fn it_sets_new_versions() {
             Line::Definition {
                 tool: Tool::new(
                     Identifier::new("golang"),
-                    vec![Version::new(Identifier::new("1337"), Whitespace::new(" ")),]
+                    vec![Version::new(StringValue::new("1337"), Whitespace::new(" ")),]
                 ),
                 whitespace: None,
                 comment: None
@@ -329,7 +355,7 @@ fn it_sets_new_versions_on_empty() {
     let result = transformer::set_versions(
         &ast,
         Identifier::new("golang"),
-        vec![Identifier::new("1337")],
+        vec![StringValue::new("1337")],
     );
 
     assert_eq!(
@@ -337,7 +363,7 @@ fn it_sets_new_versions_on_empty() {
         AST::new(vec![Line::Definition {
             tool: Tool::new(
                 Identifier::new("golang"),
-                vec![Version::new(Identifier::new("1337"), Whitespace::new(" ")),]
+                vec![Version::new(StringValue::new("1337"), Whitespace::new(" ")),]
             ),
             whitespace: None,
             comment: None
@@ -358,8 +384,8 @@ fn it_sets_new_empty_versions() {
                 tool: Tool::new(
                     Identifier::new("nodejs"),
                     vec![
-                        Version::new(Identifier::new("18.12"), Whitespace::new("  ")),
-                        Version::new(Identifier::new("system"), Whitespace::new("    ")),
+                        Version::new(StringValue::new("18.12"), Whitespace::new("  ")),
+                        Version::new(StringValue::new("system"), Whitespace::new("    ")),
                     ]
                 ),
                 whitespace: Some(Whitespace::new("  ")),
@@ -369,8 +395,8 @@ fn it_sets_new_empty_versions() {
                 tool: Tool::new(
                     Identifier::new("ruby"),
                     vec![
-                        Version::new(Identifier::new("12"), Whitespace::new("    ")),
-                        Version::new(Identifier::new("19"), Whitespace::new("       ")),
+                        Version::new(StringValue::new("12"), Whitespace::new("    ")),
+                        Version::new(StringValue::new("19"), Whitespace::new("       ")),
                     ]
                 ),
                 whitespace: None,
@@ -383,7 +409,7 @@ fn it_sets_new_empty_versions() {
             Line::Definition {
                 tool: Tool::new(
                     Identifier::new("rust"),
-                    vec![Version::new(Identifier::new("4"), Whitespace::new(" ")),]
+                    vec![Version::new(StringValue::new("4"), Whitespace::new(" ")),]
                 ),
                 whitespace: Some(Whitespace::new("      ")),
                 comment: None
@@ -415,6 +441,13 @@ fn it_sets_new_empty_versions() {
                 unparsed: Unparsed::new("rust# comment"),
             },
             Line::Invalid {
+                error: SyntaxError::UnexpectedToken {
+                    token: '+',
+                    expected: "Whitespace",
+                },
+                unparsed: Unparsed::new("inva+lid 20"),
+            },
+            Line::Invalid {
                 error: SyntaxError::UnexpectedEOL {
                     expected: "Version",
                 },
@@ -424,8 +457,8 @@ fn it_sets_new_empty_versions() {
                 tool: Tool::new(
                     Identifier::new("lua"),
                     vec![
-                        Version::new(Identifier::new("19"), Whitespace::new(" ")),
-                        Version::new(Identifier::new("20"), Whitespace::new("      ")),
+                        Version::new(StringValue::new("19"), Whitespace::new(" ")),
+                        Version::new(StringValue::new("20"), Whitespace::new("      ")),
                     ]
                 ),
                 whitespace: None,
@@ -458,8 +491,8 @@ fn it_removes_versions() {
                 tool: Tool::new(
                     Identifier::new("nodejs"),
                     vec![
-                        Version::new(Identifier::new("18.12"), Whitespace::new("  ")),
-                        Version::new(Identifier::new("system"), Whitespace::new("    ")),
+                        Version::new(StringValue::new("18.12"), Whitespace::new("  ")),
+                        Version::new(StringValue::new("system"), Whitespace::new("    ")),
                     ]
                 ),
                 whitespace: Some(Whitespace::new("  ")),
@@ -472,7 +505,7 @@ fn it_removes_versions() {
             Line::Definition {
                 tool: Tool::new(
                     Identifier::new("rust"),
-                    vec![Version::new(Identifier::new("4"), Whitespace::new(" ")),]
+                    vec![Version::new(StringValue::new("4"), Whitespace::new(" ")),]
                 ),
                 whitespace: Some(Whitespace::new("      ")),
                 comment: None
@@ -504,6 +537,13 @@ fn it_removes_versions() {
                 unparsed: Unparsed::new("rust# comment"),
             },
             Line::Invalid {
+                error: SyntaxError::UnexpectedToken {
+                    token: '+',
+                    expected: "Whitespace",
+                },
+                unparsed: Unparsed::new("inva+lid 20"),
+            },
+            Line::Invalid {
                 error: SyntaxError::UnexpectedEOL {
                     expected: "Version",
                 },
@@ -513,8 +553,8 @@ fn it_removes_versions() {
                 tool: Tool::new(
                     Identifier::new("lua"),
                     vec![
-                        Version::new(Identifier::new("19"), Whitespace::new(" ")),
-                        Version::new(Identifier::new("20"), Whitespace::new("      ")),
+                        Version::new(StringValue::new("19"), Whitespace::new(" ")),
+                        Version::new(StringValue::new("20"), Whitespace::new("      ")),
                     ]
                 ),
                 whitespace: None,

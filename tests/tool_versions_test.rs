@@ -35,6 +35,10 @@ fn it_works_with_file() {
                 token: '#',
                 expected: "Version",
             },
+            &ast::SyntaxError::UnexpectedToken {
+                token: '+',
+                expected: "Whitespace",
+            },
             &ast::SyntaxError::UnexpectedEOL {
                 expected: "Version",
             },
@@ -66,7 +70,7 @@ fn it_works_with_file() {
 
     let result = fs::read_to_string(path).unwrap();
 
-    assert_eq!(result, "nodejs  8    9 10  # foobar  \nruby    13\n   ## foo ## bar \nrust 4      \n         \nnodejs      12   \n ignored \n# asda\nrust# comment\nrust\nlua   \ngolang \n");
+    assert_eq!(result, "nodejs  8    9 10  # foobar  \nruby    13\n   ## foo ## bar \nrust 4      \n         \nnodejs      12   \n ignored \n# asda\nrust# comment\ninva+lid 20\nrust\nlua   \ngolang \n");
 }
 
 #[test]
