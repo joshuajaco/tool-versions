@@ -3,6 +3,7 @@ use std::{fs, io, path::Path};
 pub mod ast;
 pub mod parser;
 pub mod transformer;
+pub mod writer;
 
 pub struct ToolVersions {
     ast: ast::AST,
@@ -34,5 +35,13 @@ impl ToolVersions {
 
     pub fn set_versions(&mut self, tool_name: &str, versions: Vec<&str>) {
         self.ast = transformer::set_versions(&self.ast, tool_name, versions);
+    }
+
+    pub fn write(&self) -> String {
+        writer::write(&self.ast)
+    }
+
+    pub fn write_file<P: AsRef<Path>>(&self, path: P) -> io::Result<()> {
+        writer::write_file(&self.ast, path)
     }
 }
