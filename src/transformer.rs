@@ -1,6 +1,48 @@
 use crate::ast::{Identifier, Line, Tool, Version, Whitespace, AST};
 
-pub fn set_versions(ast: &AST, tool_name: &str, versions: Vec<&str>) -> AST {
+pub fn set_versions(ast: &AST, name: Identifier, versions: Vec<Identifier>) -> AST {
+    let versions: Vec<Version> = versions
+        .iter()
+        .map(|version| Version {
+            value: version.clone(),
+            left_padding: Whitespace(" ".to_string()),
+        })
+        .collect();
+
+    if ast.0.len() == 0 {
+        if versions.len() == 0 {
+            return AST(vec![]);
+        }
+
+        return AST(vec![Line::Definition {
+            tool: Tool { name, versions },
+            whitespace: None,
+            comment: None,
+        }]);
+    }
+
+    if !ast.0.iter().any(|line| match line {
+        Line::Definition { tool, .. } if tool.name == name => true,
+        _ => false,
+    }) {
+        let mut lines = ast.0.clone();
+
+        if versions.len() == 0 {
+            return AST(lines);
+        }
+
+        lines.insert(
+            0,
+            Line::Definition {
+                tool: Tool { name, versions },
+                whitespace: None,
+                comment: None,
+            },
+        );
+
+        return AST(lines);
+    }
+
     AST(ast
         .0
         .iter()
@@ -9,7 +51,7 @@ pub fn set_versions(ast: &AST, tool_name: &str, versions: Vec<&str>) -> AST {
                 tool,
                 whitespace,
                 comment,
-            } if tool.name.0.eq(tool_name) => {
+            } if tool.name == name => {
                 if versions.len() == 0 {
                     return None;
                 }
@@ -18,7 +60,7 @@ pub fn set_versions(ast: &AST, tool_name: &str, versions: Vec<&str>) -> AST {
                     .iter()
                     .enumerate()
                     .map(|(i, version)| {
-                        let value = Identifier(version.to_string());
+                        let value = version.value.clone();
 
                         let left_padding = if let Some(old_version) = tool.versions.get(i) {
                             old_version.left_padding.clone()
@@ -35,7 +77,7 @@ pub fn set_versions(ast: &AST, tool_name: &str, versions: Vec<&str>) -> AST {
 
                 Some(Line::Definition {
                     tool: Tool {
-                        name: tool.name.clone(),
+                        name: name.clone(),
                         versions: new_versions,
                     },
                     whitespace: whitespace.clone(),
