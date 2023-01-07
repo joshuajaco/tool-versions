@@ -89,3 +89,23 @@ fn it_works_with_string() {
 
     assert_eq!(result, "nodejs  8    9 10  # foobar  \n");
 }
+
+#[test]
+fn it_works_with_new() {
+    let mut tools = ToolVersions::new();
+
+    assert_eq!(tools.versions("foobar"), None);
+
+    assert_eq!(tools.errors(), Vec::<&ast::SyntaxError>::new());
+
+    tools.set_versions("lua", vec![]);
+
+    assert_eq!(tools.versions("lua"), None);
+
+    tools.set_versions("ruby", vec!["12", "19"]);
+
+    assert_eq!(
+        tools.versions("ruby"),
+        Some(vec!["12".to_string(), "19".to_string()])
+    );
+}

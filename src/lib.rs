@@ -10,6 +10,12 @@ pub struct ToolVersions {
 }
 
 impl ToolVersions {
+    pub fn new() -> Self {
+        ToolVersions {
+            ast: ast::AST(vec![]),
+        }
+    }
+
     pub fn from(s: &str) -> Self {
         ToolVersions {
             ast: parser::parse(s),
