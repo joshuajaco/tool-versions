@@ -123,6 +123,7 @@ fn parse_definition(
                     }
                     Some(next) => {
                         let mut version = String::from(next);
+
                         match take_identifier(chars, &mut version) {
                             None => {
                                 versions.push(Version {
