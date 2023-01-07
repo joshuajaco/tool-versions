@@ -45,7 +45,14 @@ impl ToolVersions {
     }
 
     pub fn set_versions(&mut self, tool_name: &str, versions: Vec<&str>) {
-        self.ast = transformer::set_versions(&self.ast, tool_name, versions);
+        self.ast = transformer::set_versions(
+            &self.ast,
+            ast::Identifier::new(tool_name),
+            versions
+                .iter()
+                .map(|version| ast::Identifier::new(version))
+                .collect(),
+        );
     }
 
     pub fn write(&self) -> String {
