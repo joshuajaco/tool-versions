@@ -1,5 +1,4 @@
 use std::path::Path;
-
 use tool_versions::ast::{
     Identifier, Line, SyntaxError, Unparsed, Version, VersionString, Versions, Whitespace, AST,
 };
@@ -54,12 +53,19 @@ fn it_sets_more_versions() {
                 whitespace: Some(Whitespace::new("      ")),
                 comment: None
             },
+            Line::Invalid {
+                error: SyntaxError::UnexpectedToken {
+                    token: '+',
+                    expected: "Identifier,Whitespace,Comment",
+                },
+                unparsed: Unparsed::new("+invalid 12 "),
+            },
             Line::Empty {
                 whitespace: Some(Whitespace::new("         ")),
                 comment: None
             },
             Line::Invalid {
-                error: SyntaxError::DuplicateIdentifier("nodejs".to_string()),
+                error: SyntaxError::DuplicateIdentifier(Identifier::new("nodejs")),
                 unparsed: Unparsed::new("nodejs      12   "),
             },
             Line::Invalid {
@@ -103,7 +109,7 @@ fn it_sets_more_versions() {
                 comment: Some(Unparsed::new("ay"))
             },
             Line::Invalid {
-                error: SyntaxError::DuplicateIdentifier("lua".to_string()),
+                error: SyntaxError::DuplicateIdentifier(Identifier::new("lua")),
                 unparsed: Unparsed::new("lua   "),
             },
             Line::Invalid {
@@ -160,12 +166,19 @@ fn it_sets_less_versions() {
                 whitespace: Some(Whitespace::new("      ")),
                 comment: None
             },
+            Line::Invalid {
+                error: SyntaxError::UnexpectedToken {
+                    token: '+',
+                    expected: "Identifier,Whitespace,Comment",
+                },
+                unparsed: Unparsed::new("+invalid 12 "),
+            },
             Line::Empty {
                 whitespace: Some(Whitespace::new("         ")),
                 comment: None
             },
             Line::Invalid {
-                error: SyntaxError::DuplicateIdentifier("nodejs".to_string()),
+                error: SyntaxError::DuplicateIdentifier(Identifier::new("nodejs")),
                 unparsed: Unparsed::new("nodejs      12   "),
             },
             Line::Invalid {
@@ -209,7 +222,7 @@ fn it_sets_less_versions() {
                 comment: Some(Unparsed::new("ay"))
             },
             Line::Invalid {
-                error: SyntaxError::DuplicateIdentifier("lua".to_string()),
+                error: SyntaxError::DuplicateIdentifier(Identifier::new("lua")),
                 unparsed: Unparsed::new("lua   "),
             },
             Line::Invalid {
@@ -266,12 +279,19 @@ fn it_sets_new_versions() {
                 whitespace: Some(Whitespace::new("      ")),
                 comment: None
             },
+            Line::Invalid {
+                error: SyntaxError::UnexpectedToken {
+                    token: '+',
+                    expected: "Identifier,Whitespace,Comment",
+                },
+                unparsed: Unparsed::new("+invalid 12 "),
+            },
             Line::Empty {
                 whitespace: Some(Whitespace::new("         ")),
                 comment: None
             },
             Line::Invalid {
-                error: SyntaxError::DuplicateIdentifier("nodejs".to_string()),
+                error: SyntaxError::DuplicateIdentifier(Identifier::new("nodejs")),
                 unparsed: Unparsed::new("nodejs      12   "),
             },
             Line::Invalid {
@@ -315,7 +335,7 @@ fn it_sets_new_versions() {
                 comment: Some(Unparsed::new("ay"))
             },
             Line::Invalid {
-                error: SyntaxError::DuplicateIdentifier("lua".to_string()),
+                error: SyntaxError::DuplicateIdentifier(Identifier::new("lua")),
                 unparsed: Unparsed::new("lua   "),
             },
             Line::Invalid {
@@ -401,12 +421,19 @@ fn it_sets_new_empty_versions() {
                 whitespace: Some(Whitespace::new("      ")),
                 comment: None
             },
+            Line::Invalid {
+                error: SyntaxError::UnexpectedToken {
+                    token: '+',
+                    expected: "Identifier,Whitespace,Comment",
+                },
+                unparsed: Unparsed::new("+invalid 12 "),
+            },
             Line::Empty {
                 whitespace: Some(Whitespace::new("         ")),
                 comment: None
             },
             Line::Invalid {
-                error: SyntaxError::DuplicateIdentifier("nodejs".to_string()),
+                error: SyntaxError::DuplicateIdentifier(Identifier::new("nodejs")),
                 unparsed: Unparsed::new("nodejs      12   "),
             },
             Line::Invalid {
@@ -450,7 +477,7 @@ fn it_sets_new_empty_versions() {
                 comment: Some(Unparsed::new("ay"))
             },
             Line::Invalid {
-                error: SyntaxError::DuplicateIdentifier("lua".to_string()),
+                error: SyntaxError::DuplicateIdentifier(Identifier::new("lua")),
                 unparsed: Unparsed::new("lua   "),
             },
             Line::Invalid {
@@ -494,12 +521,19 @@ fn it_removes_versions() {
                 whitespace: Some(Whitespace::new("      ")),
                 comment: None
             },
+            Line::Invalid {
+                error: SyntaxError::UnexpectedToken {
+                    token: '+',
+                    expected: "Identifier,Whitespace,Comment",
+                },
+                unparsed: Unparsed::new("+invalid 12 "),
+            },
             Line::Empty {
                 whitespace: Some(Whitespace::new("         ")),
                 comment: None
             },
             Line::Invalid {
-                error: SyntaxError::DuplicateIdentifier("nodejs".to_string()),
+                error: SyntaxError::DuplicateIdentifier(Identifier::new("nodejs")),
                 unparsed: Unparsed::new("nodejs      12   "),
             },
             Line::Invalid {
@@ -543,7 +577,7 @@ fn it_removes_versions() {
                 comment: Some(Unparsed::new("ay"))
             },
             Line::Invalid {
-                error: SyntaxError::DuplicateIdentifier("lua".to_string()),
+                error: SyntaxError::DuplicateIdentifier(Identifier::new("lua")),
                 unparsed: Unparsed::new("lua   "),
             },
             Line::Invalid {

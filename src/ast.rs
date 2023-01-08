@@ -28,27 +28,27 @@ pub struct Version {
     pub(crate) left_padding: Whitespace,
 }
 
-#[derive(Debug, PartialEq, Clone)]
-pub struct Identifier(pub(crate) String);
+#[derive(Debug, PartialEq, Clone, Eq, Hash)]
+pub struct Identifier(String);
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct VersionString(pub(crate) String);
+pub struct VersionString(String);
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct Whitespace(pub(crate) String);
+pub struct Whitespace(String);
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct Unparsed(pub(crate) String);
+pub struct Unparsed(String);
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum SyntaxError {
     UnexpectedToken { token: char, expected: &'static str },
     UnexpectedEOL { expected: &'static str },
-    DuplicateIdentifier(String),
+    DuplicateIdentifier(Identifier),
 }
 
-pub trait Token {
-    fn is_valid_char(c: char) -> bool;
+pub trait Token: From<String> {
+    fn value(&self) -> &String;
 }
 
 impl AST {
@@ -57,158 +57,161 @@ impl AST {
     }
 }
 
-#[derive(Debug)]
-pub enum VersionsConstructorError {
-    MissingVersions,
-}
-
 impl Versions {
     pub fn new(versions: Vec<Version>) -> Self {
         match Self::try_new(versions) {
-            Ok(tool) => tool,
-            Err(e) => panic!("{:?}", e),
+            Some(tool) => tool,
+            None => panic!("invalid Versions"),
         }
     }
 
-    pub fn try_new(versions: Vec<Version>) -> Result<Self, VersionsConstructorError> {
+    pub fn try_new(versions: Vec<Version>) -> Option<Self> {
         if versions.len() == 0 {
-            return Err(VersionsConstructorError::MissingVersions);
+            return None;
         }
 
-        Ok(Self(versions))
+        Some(Self(versions))
     }
-}
-
-#[derive(Debug)]
-pub enum VersionConstructorError {
-    InvalidLeftPadding(Whitespace),
 }
 
 impl Version {
     pub fn new(value: VersionString, left_padding: Whitespace) -> Self {
         match Self::try_new(value, left_padding) {
-            Ok(version) => version,
-            Err(e) => panic!("{:?}", e),
+            Some(version) => version,
+            None => panic!("invalid Version"),
         }
     }
 
-    pub fn try_new(
-        value: VersionString,
-        left_padding: Whitespace,
-    ) -> Result<Self, VersionConstructorError> {
+    pub fn try_new(value: VersionString, left_padding: Whitespace) -> Option<Self> {
         if left_padding.0.len() == 0 {
-            return Err(VersionConstructorError::InvalidLeftPadding(left_padding));
+            return None;
         }
 
-        Ok(Self {
+        Some(Self {
             value,
             left_padding,
         })
     }
 }
 
-impl Token for Identifier {
-    fn is_valid_char(c: char) -> bool {
-        matches!(c, '0'..='9' | 'A'..='Z' | 'a'..='z' | '.'| '-'| '_')
-    }
-}
-
-#[derive(Debug)]
-pub enum IdentifierConstructorError {
-    InvalidValue(String),
-}
-
 impl Identifier {
     pub fn new(value: &str) -> Self {
         match Self::try_new(value) {
-            Ok(identifier) => identifier,
-            Err(e) => panic!("{:?}", e),
+            Some(identifier) => identifier,
+            None => panic!("invalid Identifier"),
         }
     }
 
-    pub fn try_new(value: &str) -> Result<Self, IdentifierConstructorError> {
-        if !value.chars().all(Self::is_valid_char) {
-            return Err(IdentifierConstructorError::InvalidValue(value.to_string()));
+    pub fn try_new(value: &str) -> Option<Self> {
+        if !value
+            .chars()
+            .all(|c| matches!(c, '0'..='9' | 'A'..='Z' | 'a'..='z' | '.'| '-'| '_'))
+        {
+            return None;
         }
 
-        Ok(Self(value.to_string()))
+        Some(Self(value.to_string()))
     }
 }
 
-impl Token for VersionString {
-    fn is_valid_char(c: char) -> bool {
-        !c.is_whitespace() && c != '#'
+impl From<String> for Identifier {
+    fn from(value: String) -> Self {
+        Self(value)
     }
 }
 
-#[derive(Debug)]
-pub enum StringValueConstructorError {
-    InvalidValue(String),
+impl Token for Identifier {
+    fn value(&self) -> &String {
+        &self.0
+    }
 }
 
 impl VersionString {
     pub fn new(value: &str) -> Self {
         match Self::try_new(value) {
-            Ok(string_value) => string_value,
-            Err(e) => panic!("{:?}", e),
+            Some(string_value) => string_value,
+            None => panic!("invalid VersionString"),
         }
     }
 
-    pub fn try_new(value: &str) -> Result<Self, StringValueConstructorError> {
-        if !value.chars().all(Self::is_valid_char) {
-            return Err(StringValueConstructorError::InvalidValue(value.to_string()));
+    pub fn try_new(value: &str) -> Option<Self> {
+        if !value.chars().all(|c| !c.is_whitespace() && c != '#') {
+            return None;
         }
 
-        Ok(Self(value.to_string()))
+        Some(Self(value.to_string()))
     }
 }
 
-impl Token for Whitespace {
-    fn is_valid_char(c: char) -> bool {
-        c.is_whitespace() && c != '\n' && c != '\r'
+impl From<String> for VersionString {
+    fn from(value: String) -> Self {
+        Self(value)
     }
 }
 
-#[derive(Debug)]
-pub enum WhitespaceConstructorError {
-    InvalidValue(String),
+impl Token for VersionString {
+    fn value(&self) -> &String {
+        &self.0
+    }
 }
 
 impl Whitespace {
     pub fn new(value: &str) -> Self {
         match Self::try_new(value) {
-            Ok(whitespace) => whitespace,
-            Err(e) => panic!("{:?}", e),
+            Some(whitespace) => whitespace,
+            None => panic!("invalid Whitespace"),
         }
     }
 
-    pub fn try_new(value: &str) -> Result<Self, WhitespaceConstructorError> {
-        if !value.chars().all(Self::is_valid_char) {
-            return Err(WhitespaceConstructorError::InvalidValue(value.to_string()));
+    pub fn try_new(value: &str) -> Option<Self> {
+        if !value
+            .chars()
+            .all(|c| c.is_whitespace() && c != '\n' && c != '\r')
+        {
+            return None;
         }
 
-        Ok(Self(value.to_string()))
+        Some(Self(value.to_string()))
     }
 }
 
-#[derive(Debug)]
-pub enum UnparsedConstructorError {
-    InvalidValue(String),
+impl From<String> for Whitespace {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl Token for Whitespace {
+    fn value(&self) -> &String {
+        &self.0
+    }
 }
 
 impl Unparsed {
     pub fn new(value: &str) -> Self {
         match Self::try_new(value) {
-            Ok(unparsed) => unparsed,
-            Err(e) => panic!("{:?}", e),
+            Some(unparsed) => unparsed,
+            None => panic!("invalid Unparsed"),
         }
     }
 
-    pub fn try_new(value: &str) -> Result<Self, UnparsedConstructorError> {
+    pub fn try_new(value: &str) -> Option<Self> {
         if value.chars().any(|c| c == '\n' || c == '\r') {
-            return Err(UnparsedConstructorError::InvalidValue(value.to_string()));
+            return None;
         }
 
-        Ok(Self(value.to_string()))
+        Some(Self(value.to_string()))
+    }
+}
+
+impl From<String> for Unparsed {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl Token for Unparsed {
+    fn value(&self) -> &String {
+        &self.0
     }
 }

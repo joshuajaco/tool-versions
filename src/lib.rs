@@ -1,3 +1,4 @@
+use crate::ast::Token;
 use std::{io, path::Path};
 
 pub mod ast;
@@ -40,8 +41,8 @@ impl ToolVersions {
 
     pub fn versions(&self, tool_name: &str) -> Option<Vec<String>> {
         self.ast.0.iter().find_map(|line| match line {
-            ast::Line::ToolDefinition { name, versions, .. } if name.0 == tool_name => {
-                Some(versions.0.iter().map(|v| v.value.0.clone()).collect())
+            ast::Line::ToolDefinition { name, versions, .. } if name.value() == tool_name => {
+                Some(versions.0.iter().map(|v| v.value.value().clone()).collect())
             }
             _ => None,
         })

@@ -1,4 +1,4 @@
-use crate::ast::{Line, AST};
+use crate::ast::{Line, Token, AST};
 use std::{fs, io, path::Path};
 
 pub fn write_file<P: AsRef<Path>>(ast: &AST, path: P) -> io::Result<()> {
@@ -24,15 +24,15 @@ impl Line {
                 whitespace,
                 comment,
             } => {
-                let mut s = String::from(&name.0);
+                let mut s = String::from(name.value());
 
                 s.push_str(
                     &versions
                         .0
                         .iter()
                         .map(|version| {
-                            let mut s = String::from(&version.left_padding.0);
-                            s.push_str(&version.value.0);
+                            let mut s = String::from(version.left_padding.value());
+                            s.push_str(version.value.value());
                             s
                         })
                         .collect::<Vec<String>>()
@@ -40,12 +40,12 @@ impl Line {
                 );
 
                 if let Some(whitespace) = whitespace {
-                    s.push_str(&whitespace.0);
+                    s.push_str(whitespace.value());
                 }
 
                 if let Some(comment) = comment {
                     s.push_str("#");
-                    s.push_str(&comment.0);
+                    s.push_str(comment.value());
                 }
 
                 s
@@ -57,17 +57,17 @@ impl Line {
                 let mut s = String::new();
 
                 if let Some(whitespace) = whitespace {
-                    s.push_str(&whitespace.0);
+                    s.push_str(whitespace.value());
                 }
 
                 if let Some(comment) = comment {
                     s.push_str("#");
-                    s.push_str(&comment.0);
+                    s.push_str(comment.value());
                 }
 
                 s
             }
-            Line::Invalid { unparsed, .. } => unparsed.0.clone(),
+            Line::Invalid { unparsed, .. } => unparsed.value().clone(),
         }
     }
 }

@@ -5,7 +5,7 @@ pub fn set_versions(ast: &AST, tool_name: Identifier, versions: Vec<VersionStrin
         .iter()
         .map(|version| Version {
             value: version.clone(),
-            left_padding: Whitespace(" ".to_string()),
+            left_padding: Whitespace::from(" ".to_string()),
         })
         .collect();
 
@@ -65,7 +65,7 @@ pub fn set_versions(ast: &AST, tool_name: Identifier, versions: Vec<VersionStrin
                         let left_padding = if let Some(old_version) = old_versions.0.get(i) {
                             old_version.left_padding.clone()
                         } else {
-                            Whitespace(" ".to_string())
+                            Whitespace::from(" ".to_string())
                         };
 
                         Version {

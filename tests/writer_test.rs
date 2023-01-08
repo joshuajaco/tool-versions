@@ -38,12 +38,19 @@ fn it_works() {
             whitespace: Some(Whitespace::new("      ")),
             comment: None,
         },
+        Line::Invalid {
+            error: SyntaxError::UnexpectedToken {
+                token: '+',
+                expected: "Identifier,Whitespace,Comment",
+            },
+            unparsed: Unparsed::new("+invalid 12 "),
+        },
         Line::Empty {
             whitespace: Some(Whitespace::new("         ")),
             comment: None,
         },
         Line::Invalid {
-            error: SyntaxError::DuplicateIdentifier("nodejs".to_string()),
+            error: SyntaxError::DuplicateIdentifier(Identifier::new("nodejs")),
             unparsed: Unparsed::new("nodejs      12   "),
         },
         Line::Invalid {
@@ -87,7 +94,7 @@ fn it_works() {
             comment: Some(Unparsed::new("ay")),
         },
         Line::Invalid {
-            error: SyntaxError::DuplicateIdentifier("lua".to_string()),
+            error: SyntaxError::DuplicateIdentifier(Identifier::new("lua")),
             unparsed: Unparsed::new("lua   "),
         },
         Line::Invalid {
