@@ -1,4 +1,4 @@
-use crate::ast::{Line, Tool, AST};
+use crate::ast::{Line, AST};
 use std::{fs, io, path::Path};
 
 pub fn write_file<P: AsRef<Path>>(ast: &AST, path: P) -> io::Result<()> {
@@ -18,12 +18,26 @@ pub fn write(ast: &AST) -> String {
 impl Line {
     fn to_string(&self) -> String {
         match self {
-            Line::Definition {
-                tool,
+            Line::ToolDefinition {
+                name,
+                versions,
                 whitespace,
                 comment,
             } => {
-                let mut s = String::from(tool.to_string());
+                let mut s = String::from(&name.0);
+
+                s.push_str(
+                    &versions
+                        .0
+                        .iter()
+                        .map(|version| {
+                            let mut s = String::from(&version.left_padding.0);
+                            s.push_str(&version.value.0);
+                            s
+                        })
+                        .collect::<Vec<String>>()
+                        .join(""),
+                );
 
                 if let Some(whitespace) = whitespace {
                     s.push_str(&whitespace.0);
@@ -55,25 +69,5 @@ impl Line {
             }
             Line::Invalid { unparsed, .. } => unparsed.0.clone(),
         }
-    }
-}
-
-impl Tool {
-    fn to_string(&self) -> String {
-        let mut s = String::from(&self.name.0);
-
-        let versions: Vec<String> = self
-            .versions
-            .iter()
-            .map(|version| {
-                let mut s = String::from(&version.left_padding.0);
-                s.push_str(&version.value.0);
-                s
-            })
-            .collect();
-
-        s.push_str(&versions.join(""));
-
-        s
     }
 }

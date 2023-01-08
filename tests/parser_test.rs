@@ -1,6 +1,6 @@
 use std::{fs, path::Path};
 use tool_versions::ast::{
-    Identifier, Line, StringValue, SyntaxError, Tool, Unparsed, Version, Whitespace, AST,
+    Identifier, Line, SyntaxError, Unparsed, Version, VersionString, Versions, Whitespace, AST,
 };
 use tool_versions::parser;
 
@@ -18,25 +18,21 @@ fn it_works() {
     assert_eq!(
         parse_file_result,
         AST::new(vec![
-            Line::Definition {
-                tool: Tool::new(
-                    Identifier::new("nodejs"),
-                    vec![
-                        Version::new(StringValue::new("18.12"), Whitespace::new("  ")),
-                        Version::new(StringValue::new("system"), Whitespace::new("    ")),
-                    ]
-                ),
+            Line::ToolDefinition {
+                name: Identifier::new("nodejs"),
+                versions: Versions::new(vec![
+                    Version::new(VersionString::new("18.12"), Whitespace::new("  ")),
+                    Version::new(VersionString::new("system"), Whitespace::new("    ")),
+                ]),
                 whitespace: Some(Whitespace::new("  ")),
                 comment: Some(Unparsed::new(" foobar  "))
             },
-            Line::Definition {
-                tool: Tool::new(
-                    Identifier::new("ruby"),
-                    vec![
-                        Version::new(StringValue::new("12"), Whitespace::new("    ")),
-                        Version::new(StringValue::new("19"), Whitespace::new("       ")),
-                    ]
-                ),
+            Line::ToolDefinition {
+                name: Identifier::new("ruby"),
+                versions: Versions::new(vec![
+                    Version::new(VersionString::new("12"), Whitespace::new("    ")),
+                    Version::new(VersionString::new("19"), Whitespace::new("       ")),
+                ]),
                 whitespace: None,
                 comment: None
             },
@@ -44,11 +40,12 @@ fn it_works() {
                 whitespace: Some(Whitespace::new("   ")),
                 comment: Some(Unparsed::new("# foo ## bar "))
             },
-            Line::Definition {
-                tool: Tool::new(
-                    Identifier::new("rust"),
-                    vec![Version::new(StringValue::new("4"), Whitespace::new(" ")),]
-                ),
+            Line::ToolDefinition {
+                name: Identifier::new("rust"),
+                versions: Versions::new(vec![Version::new(
+                    VersionString::new("4"),
+                    Whitespace::new(" ")
+                ),]),
                 whitespace: Some(Whitespace::new("      ")),
                 comment: None
             },
@@ -91,14 +88,12 @@ fn it_works() {
                 },
                 unparsed: Unparsed::new("rust"),
             },
-            Line::Definition {
-                tool: Tool::new(
-                    Identifier::new("lua"),
-                    vec![
-                        Version::new(StringValue::new("19"), Whitespace::new(" ")),
-                        Version::new(StringValue::new("20"), Whitespace::new("      ")),
-                    ]
-                ),
+            Line::ToolDefinition {
+                name: Identifier::new("lua"),
+                versions: Versions::new(vec![
+                    Version::new(VersionString::new("19"), Whitespace::new(" ")),
+                    Version::new(VersionString::new("20"), Whitespace::new("      ")),
+                ]),
                 whitespace: None,
                 comment: Some(Unparsed::new("ay"))
             },

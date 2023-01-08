@@ -1,6 +1,6 @@
-use crate::ast::{Identifier, Line, StringValue, Tool, Version, Whitespace, AST};
+use crate::ast::{Identifier, Line, Version, VersionString, Versions, Whitespace, AST};
 
-pub fn set_versions(ast: &AST, name: Identifier, versions: Vec<StringValue>) -> AST {
+pub fn set_versions(ast: &AST, tool_name: Identifier, versions: Vec<VersionString>) -> AST {
     let versions: Vec<Version> = versions
         .iter()
         .map(|version| Version {
@@ -14,15 +14,16 @@ pub fn set_versions(ast: &AST, name: Identifier, versions: Vec<StringValue>) -> 
             return AST(vec![]);
         }
 
-        return AST(vec![Line::Definition {
-            tool: Tool { name, versions },
+        return AST(vec![Line::ToolDefinition {
+            name: tool_name,
+            versions: Versions(versions),
             whitespace: None,
             comment: None,
         }]);
     }
 
     if !ast.0.iter().any(|line| match line {
-        Line::Definition { tool, .. } if tool.name == name => true,
+        Line::ToolDefinition { name, .. } if *name == tool_name => true,
         _ => false,
     }) {
         let mut lines = ast.0.clone();
@@ -31,8 +32,9 @@ pub fn set_versions(ast: &AST, name: Identifier, versions: Vec<StringValue>) -> 
             return AST(lines);
         }
 
-        lines.push(Line::Definition {
-            tool: Tool { name, versions },
+        lines.push(Line::ToolDefinition {
+            name: tool_name,
+            versions: Versions(versions),
             whitespace: None,
             comment: None,
         });
@@ -44,11 +46,12 @@ pub fn set_versions(ast: &AST, name: Identifier, versions: Vec<StringValue>) -> 
         .0
         .iter()
         .filter_map(|line| match line {
-            Line::Definition {
-                tool,
+            Line::ToolDefinition {
+                name,
                 whitespace,
                 comment,
-            } if tool.name == name => {
+                versions: old_versions,
+            } if *name == tool_name => {
                 if versions.len() == 0 {
                     return None;
                 }
@@ -59,7 +62,7 @@ pub fn set_versions(ast: &AST, name: Identifier, versions: Vec<StringValue>) -> 
                     .map(|(i, version)| {
                         let value = version.value.clone();
 
-                        let left_padding = if let Some(old_version) = tool.versions.get(i) {
+                        let left_padding = if let Some(old_version) = old_versions.0.get(i) {
                             old_version.left_padding.clone()
                         } else {
                             Whitespace(" ".to_string())
@@ -72,11 +75,9 @@ pub fn set_versions(ast: &AST, name: Identifier, versions: Vec<StringValue>) -> 
                     })
                     .collect();
 
-                Some(Line::Definition {
-                    tool: Tool {
-                        name: name.clone(),
-                        versions: new_versions,
-                    },
+                Some(Line::ToolDefinition {
+                    name: name.clone(),
+                    versions: Versions(new_versions),
                     whitespace: whitespace.clone(),
                     comment: comment.clone(),
                 })

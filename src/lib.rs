@@ -39,15 +39,12 @@ impl ToolVersions {
     }
 
     pub fn versions(&self, tool_name: &str) -> Option<Vec<String>> {
-        self.ast
-            .0
-            .iter()
-            .filter_map(|line| match line {
-                ast::Line::Definition { tool, .. } => Some(tool),
-                _ => None,
-            })
-            .find(|tool| tool.name.0.eq(tool_name))
-            .map(|tool| tool.versions.iter().map(|v| v.value.0.clone()).collect())
+        self.ast.0.iter().find_map(|line| match line {
+            ast::Line::ToolDefinition { name, versions, .. } if name.0 == tool_name => {
+                Some(versions.0.iter().map(|v| v.value.0.clone()).collect())
+            }
+            _ => None,
+        })
     }
 
     pub fn set_versions(&mut self, tool_name: &str, versions: Vec<&str>) {
@@ -56,7 +53,7 @@ impl ToolVersions {
             ast::Identifier::new(tool_name),
             versions
                 .iter()
-                .map(|version| ast::StringValue::new(version))
+                .map(|version| ast::VersionString::new(version))
                 .collect(),
         );
     }

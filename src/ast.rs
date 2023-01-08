@@ -3,8 +3,9 @@ pub struct AST(pub(crate) Vec<Line>);
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Line {
-    Definition {
-        tool: Tool,
+    ToolDefinition {
+        name: Identifier,
+        versions: Versions,
         whitespace: Option<Whitespace>,
         comment: Option<Unparsed>,
     },
@@ -19,14 +20,11 @@ pub enum Line {
 }
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct Tool {
-    pub(crate) name: Identifier,
-    pub(crate) versions: Vec<Version>,
-}
+pub struct Versions(pub(crate) Vec<Version>);
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Version {
-    pub(crate) value: StringValue,
+    pub(crate) value: VersionString,
     pub(crate) left_padding: Whitespace,
 }
 
@@ -34,7 +32,7 @@ pub struct Version {
 pub struct Identifier(pub(crate) String);
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct StringValue(pub(crate) String);
+pub struct VersionString(pub(crate) String);
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Whitespace(pub(crate) String);
@@ -49,7 +47,7 @@ pub enum SyntaxError {
     DuplicateIdentifier(String),
 }
 
-pub trait Value {
+pub trait Token {
     fn is_valid_char(c: char) -> bool;
 }
 
@@ -60,24 +58,24 @@ impl AST {
 }
 
 #[derive(Debug)]
-pub enum ToolConstructorError {
+pub enum VersionsConstructorError {
     MissingVersions,
 }
 
-impl Tool {
-    pub fn new(name: Identifier, versions: Vec<Version>) -> Self {
-        match Self::try_new(name, versions) {
+impl Versions {
+    pub fn new(versions: Vec<Version>) -> Self {
+        match Self::try_new(versions) {
             Ok(tool) => tool,
             Err(e) => panic!("{:?}", e),
         }
     }
 
-    pub fn try_new(name: Identifier, versions: Vec<Version>) -> Result<Self, ToolConstructorError> {
+    pub fn try_new(versions: Vec<Version>) -> Result<Self, VersionsConstructorError> {
         if versions.len() == 0 {
-            return Err(ToolConstructorError::MissingVersions);
+            return Err(VersionsConstructorError::MissingVersions);
         }
 
-        Ok(Self { name, versions })
+        Ok(Self(versions))
     }
 }
 
@@ -87,7 +85,7 @@ pub enum VersionConstructorError {
 }
 
 impl Version {
-    pub fn new(value: StringValue, left_padding: Whitespace) -> Self {
+    pub fn new(value: VersionString, left_padding: Whitespace) -> Self {
         match Self::try_new(value, left_padding) {
             Ok(version) => version,
             Err(e) => panic!("{:?}", e),
@@ -95,7 +93,7 @@ impl Version {
     }
 
     pub fn try_new(
-        value: StringValue,
+        value: VersionString,
         left_padding: Whitespace,
     ) -> Result<Self, VersionConstructorError> {
         if left_padding.0.len() == 0 {
@@ -109,7 +107,7 @@ impl Version {
     }
 }
 
-impl Value for Identifier {
+impl Token for Identifier {
     fn is_valid_char(c: char) -> bool {
         matches!(c, '0'..='9' | 'A'..='Z' | 'a'..='z' | '.'| '-'| '_')
     }
@@ -137,7 +135,7 @@ impl Identifier {
     }
 }
 
-impl Value for StringValue {
+impl Token for VersionString {
     fn is_valid_char(c: char) -> bool {
         !c.is_whitespace() && c != '#'
     }
@@ -148,7 +146,7 @@ pub enum StringValueConstructorError {
     InvalidValue(String),
 }
 
-impl StringValue {
+impl VersionString {
     pub fn new(value: &str) -> Self {
         match Self::try_new(value) {
             Ok(string_value) => string_value,
@@ -165,7 +163,7 @@ impl StringValue {
     }
 }
 
-impl Value for Whitespace {
+impl Token for Whitespace {
     fn is_valid_char(c: char) -> bool {
         c.is_whitespace() && c != '\n' && c != '\r'
     }
