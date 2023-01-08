@@ -1,5 +1,6 @@
 use crate::ast::{
-    Identifier, Line, StringValue, SyntaxError, Tool, Unparsed, Value, Version, Whitespace, AST,
+    Identifier, Line, SyntaxError, Token, Unparsed, Version, VersionString, Versions, Whitespace,
+    AST,
 };
 
 use std::{collections::HashSet, fs, io, path::Path, str::Chars};
@@ -109,8 +110,9 @@ fn parse_definition(
                         }
                     }
                     None => {
-                        return Line::Definition {
-                            tool: Tool { name, versions },
+                        return Line::ToolDefinition {
+                            name,
+                            versions: Versions(versions),
                             whitespace: Some(Whitespace(whitespace)),
                             comment: None,
                         }
@@ -125,8 +127,9 @@ fn parse_definition(
                         }
                     }
                     Some('#') => {
-                        return Line::Definition {
-                            tool: Tool { name, versions },
+                        return Line::ToolDefinition {
+                            name,
+                            versions: Versions(versions),
                             whitespace: Some(Whitespace(whitespace)),
                             comment: Some(Unparsed(chars.collect())),
                         }
@@ -134,28 +137,30 @@ fn parse_definition(
                     Some(next) => {
                         let mut version = String::from(next);
 
-                        match take::<StringValue>(chars, &mut version) {
+                        match take::<VersionString>(chars, &mut version) {
                             None => {
                                 versions.push(Version {
-                                    value: StringValue(version),
+                                    value: VersionString(version),
                                     left_padding: Whitespace(whitespace),
                                 });
 
-                                return Line::Definition {
-                                    tool: Tool { name, versions },
+                                return Line::ToolDefinition {
+                                    name,
+                                    versions: Versions(versions),
                                     whitespace: None,
                                     comment: None,
                                 };
                             }
                             Some(next) => {
                                 versions.push(Version {
-                                    value: StringValue(version),
+                                    value: VersionString(version),
                                     left_padding: Whitespace(whitespace),
                                 });
 
                                 if next == '#' {
-                                    return Line::Definition {
-                                        tool: Tool { name, versions },
+                                    return Line::ToolDefinition {
+                                        name,
+                                        versions: Versions(versions),
                                         whitespace: None,
                                         comment: Some(Unparsed(chars.collect())),
                                     };
@@ -171,15 +176,15 @@ fn parse_definition(
     }
 }
 
-fn take<V>(chars: &mut Chars, output: &mut String) -> Option<char>
+fn take<T>(chars: &mut Chars, output: &mut String) -> Option<char>
 where
-    V: Value,
+    T: Token,
 {
     loop {
         match chars.next() {
             None => return None,
             Some(next) => {
-                if !V::is_valid_char(next) {
+                if !T::is_valid_char(next) {
                     return Some(next);
                 } else {
                     output.push(next);

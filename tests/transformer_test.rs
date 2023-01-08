@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use tool_versions::ast::{
-    Identifier, Line, StringValue, SyntaxError, Tool, Unparsed, Version, Whitespace, AST,
+    Identifier, Line, SyntaxError, Unparsed, Version, VersionString, Versions, Whitespace, AST,
 };
 use tool_versions::{parser, transformer};
 
@@ -13,35 +13,31 @@ fn it_sets_more_versions() {
         &ast,
         Identifier::new("nodejs"),
         vec![
-            StringValue::new("7"),
-            StringValue::new("9"),
-            StringValue::new("10"),
+            VersionString::new("7"),
+            VersionString::new("9"),
+            VersionString::new("10"),
         ],
     );
 
     assert_eq!(
         result,
         AST::new(vec![
-            Line::Definition {
-                tool: Tool::new(
-                    Identifier::new("nodejs"),
-                    vec![
-                        Version::new(StringValue::new("7"), Whitespace::new("  ")),
-                        Version::new(StringValue::new("9"), Whitespace::new("    ")),
-                        Version::new(StringValue::new("10"), Whitespace::new(" ")),
-                    ]
-                ),
+            Line::ToolDefinition {
+                name: Identifier::new("nodejs"),
+                versions: Versions::new(vec![
+                    Version::new(VersionString::new("7"), Whitespace::new("  ")),
+                    Version::new(VersionString::new("9"), Whitespace::new("    ")),
+                    Version::new(VersionString::new("10"), Whitespace::new(" ")),
+                ]),
                 whitespace: Some(Whitespace::new("  ")),
                 comment: Some(Unparsed::new(" foobar  "))
             },
-            Line::Definition {
-                tool: Tool::new(
-                    Identifier::new("ruby"),
-                    vec![
-                        Version::new(StringValue::new("12"), Whitespace::new("    ")),
-                        Version::new(StringValue::new("19"), Whitespace::new("       ")),
-                    ]
-                ),
+            Line::ToolDefinition {
+                name: Identifier::new("ruby"),
+                versions: Versions::new(vec![
+                    Version::new(VersionString::new("12"), Whitespace::new("    ")),
+                    Version::new(VersionString::new("19"), Whitespace::new("       ")),
+                ]),
                 whitespace: None,
                 comment: None
             },
@@ -49,11 +45,12 @@ fn it_sets_more_versions() {
                 whitespace: Some(Whitespace::new("   ")),
                 comment: Some(Unparsed::new("# foo ## bar "))
             },
-            Line::Definition {
-                tool: Tool::new(
-                    Identifier::new("rust"),
-                    vec![Version::new(StringValue::new("4"), Whitespace::new(" ")),]
-                ),
+            Line::ToolDefinition {
+                name: Identifier::new("rust"),
+                versions: Versions::new(vec![Version::new(
+                    VersionString::new("4"),
+                    Whitespace::new(" ")
+                ),]),
                 whitespace: Some(Whitespace::new("      ")),
                 comment: None
             },
@@ -96,14 +93,12 @@ fn it_sets_more_versions() {
                 },
                 unparsed: Unparsed::new("rust"),
             },
-            Line::Definition {
-                tool: Tool::new(
-                    Identifier::new("lua"),
-                    vec![
-                        Version::new(StringValue::new("19"), Whitespace::new(" ")),
-                        Version::new(StringValue::new("20"), Whitespace::new("      ")),
-                    ]
-                ),
+            Line::ToolDefinition {
+                name: Identifier::new("lua"),
+                versions: Versions::new(vec![
+                    Version::new(VersionString::new("19"), Whitespace::new(" ")),
+                    Version::new(VersionString::new("20"), Whitespace::new("      ")),
+                ]),
                 whitespace: None,
                 comment: Some(Unparsed::new("ay"))
             },
@@ -125,31 +120,30 @@ fn it_sets_more_versions() {
 fn it_sets_less_versions() {
     let ast = parser::parse_file(Path::new("tests/__fixtures__/_tool-versions")).unwrap();
 
-    let result =
-        transformer::set_versions(&ast, Identifier::new("ruby"), vec![StringValue::new("14")]);
+    let result = transformer::set_versions(
+        &ast,
+        Identifier::new("ruby"),
+        vec![VersionString::new("14")],
+    );
 
     assert_eq!(
         result,
         AST::new(vec![
-            Line::Definition {
-                tool: Tool::new(
-                    Identifier::new("nodejs"),
-                    vec![
-                        Version::new(StringValue::new("18.12"), Whitespace::new("  ")),
-                        Version::new(StringValue::new("system"), Whitespace::new("    ")),
-                    ]
-                ),
+            Line::ToolDefinition {
+                name: Identifier::new("nodejs"),
+                versions: Versions::new(vec![
+                    Version::new(VersionString::new("18.12"), Whitespace::new("  ")),
+                    Version::new(VersionString::new("system"), Whitespace::new("    ")),
+                ]),
                 whitespace: Some(Whitespace::new("  ")),
                 comment: Some(Unparsed::new(" foobar  "))
             },
-            Line::Definition {
-                tool: Tool::new(
-                    Identifier::new("ruby"),
-                    vec![Version::new(
-                        StringValue::new("14"),
-                        Whitespace::new("    ")
-                    ),]
-                ),
+            Line::ToolDefinition {
+                name: Identifier::new("ruby"),
+                versions: Versions::new(vec![Version::new(
+                    VersionString::new("14"),
+                    Whitespace::new("    ")
+                ),]),
                 whitespace: None,
                 comment: None
             },
@@ -157,11 +151,12 @@ fn it_sets_less_versions() {
                 whitespace: Some(Whitespace::new("   ")),
                 comment: Some(Unparsed::new("# foo ## bar "))
             },
-            Line::Definition {
-                tool: Tool::new(
-                    Identifier::new("rust"),
-                    vec![Version::new(StringValue::new("4"), Whitespace::new(" ")),]
-                ),
+            Line::ToolDefinition {
+                name: Identifier::new("rust"),
+                versions: Versions::new(vec![Version::new(
+                    VersionString::new("4"),
+                    Whitespace::new(" ")
+                ),]),
                 whitespace: Some(Whitespace::new("      ")),
                 comment: None
             },
@@ -204,14 +199,12 @@ fn it_sets_less_versions() {
                 },
                 unparsed: Unparsed::new("rust"),
             },
-            Line::Definition {
-                tool: Tool::new(
-                    Identifier::new("lua"),
-                    vec![
-                        Version::new(StringValue::new("19"), Whitespace::new(" ")),
-                        Version::new(StringValue::new("20"), Whitespace::new("      ")),
-                    ]
-                ),
+            Line::ToolDefinition {
+                name: Identifier::new("lua"),
+                versions: Versions::new(vec![
+                    Version::new(VersionString::new("19"), Whitespace::new(" ")),
+                    Version::new(VersionString::new("20"), Whitespace::new("      ")),
+                ]),
                 whitespace: None,
                 comment: Some(Unparsed::new("ay"))
             },
@@ -236,31 +229,27 @@ fn it_sets_new_versions() {
     let result = transformer::set_versions(
         &ast,
         Identifier::new("golang"),
-        vec![StringValue::new("1337")],
+        vec![VersionString::new("1337")],
     );
 
     assert_eq!(
         result,
         AST::new(vec![
-            Line::Definition {
-                tool: Tool::new(
-                    Identifier::new("nodejs"),
-                    vec![
-                        Version::new(StringValue::new("18.12"), Whitespace::new("  ")),
-                        Version::new(StringValue::new("system"), Whitespace::new("    ")),
-                    ]
-                ),
+            Line::ToolDefinition {
+                name: Identifier::new("nodejs"),
+                versions: Versions::new(vec![
+                    Version::new(VersionString::new("18.12"), Whitespace::new("  ")),
+                    Version::new(VersionString::new("system"), Whitespace::new("    ")),
+                ]),
                 whitespace: Some(Whitespace::new("  ")),
                 comment: Some(Unparsed::new(" foobar  "))
             },
-            Line::Definition {
-                tool: Tool::new(
-                    Identifier::new("ruby"),
-                    vec![
-                        Version::new(StringValue::new("12"), Whitespace::new("    ")),
-                        Version::new(StringValue::new("19"), Whitespace::new("       ")),
-                    ]
-                ),
+            Line::ToolDefinition {
+                name: Identifier::new("ruby"),
+                versions: Versions::new(vec![
+                    Version::new(VersionString::new("12"), Whitespace::new("    ")),
+                    Version::new(VersionString::new("19"), Whitespace::new("       ")),
+                ]),
                 whitespace: None,
                 comment: None
             },
@@ -268,11 +257,12 @@ fn it_sets_new_versions() {
                 whitespace: Some(Whitespace::new("   ")),
                 comment: Some(Unparsed::new("# foo ## bar "))
             },
-            Line::Definition {
-                tool: Tool::new(
-                    Identifier::new("rust"),
-                    vec![Version::new(StringValue::new("4"), Whitespace::new(" ")),]
-                ),
+            Line::ToolDefinition {
+                name: Identifier::new("rust"),
+                versions: Versions::new(vec![Version::new(
+                    VersionString::new("4"),
+                    Whitespace::new(" ")
+                ),]),
                 whitespace: Some(Whitespace::new("      ")),
                 comment: None
             },
@@ -315,14 +305,12 @@ fn it_sets_new_versions() {
                 },
                 unparsed: Unparsed::new("rust"),
             },
-            Line::Definition {
-                tool: Tool::new(
-                    Identifier::new("lua"),
-                    vec![
-                        Version::new(StringValue::new("19"), Whitespace::new(" ")),
-                        Version::new(StringValue::new("20"), Whitespace::new("      ")),
-                    ]
-                ),
+            Line::ToolDefinition {
+                name: Identifier::new("lua"),
+                versions: Versions::new(vec![
+                    Version::new(VersionString::new("19"), Whitespace::new(" ")),
+                    Version::new(VersionString::new("20"), Whitespace::new("      ")),
+                ]),
                 whitespace: None,
                 comment: Some(Unparsed::new("ay"))
             },
@@ -336,11 +324,12 @@ fn it_sets_new_versions() {
                 },
                 unparsed: Unparsed::new("golang "),
             },
-            Line::Definition {
-                tool: Tool::new(
-                    Identifier::new("golang"),
-                    vec![Version::new(StringValue::new("1337"), Whitespace::new(" ")),]
-                ),
+            Line::ToolDefinition {
+                name: Identifier::new("golang"),
+                versions: Versions::new(vec![Version::new(
+                    VersionString::new("1337"),
+                    Whitespace::new(" ")
+                ),]),
                 whitespace: None,
                 comment: None
             },
@@ -355,16 +344,17 @@ fn it_sets_new_versions_on_empty() {
     let result = transformer::set_versions(
         &ast,
         Identifier::new("golang"),
-        vec![StringValue::new("1337")],
+        vec![VersionString::new("1337")],
     );
 
     assert_eq!(
         result,
-        AST::new(vec![Line::Definition {
-            tool: Tool::new(
-                Identifier::new("golang"),
-                vec![Version::new(StringValue::new("1337"), Whitespace::new(" ")),]
-            ),
+        AST::new(vec![Line::ToolDefinition {
+            name: Identifier::new("golang"),
+            versions: Versions::new(vec![Version::new(
+                VersionString::new("1337"),
+                Whitespace::new(" ")
+            ),]),
             whitespace: None,
             comment: None
         },]),
@@ -380,25 +370,21 @@ fn it_sets_new_empty_versions() {
     assert_eq!(
         result,
         AST::new(vec![
-            Line::Definition {
-                tool: Tool::new(
-                    Identifier::new("nodejs"),
-                    vec![
-                        Version::new(StringValue::new("18.12"), Whitespace::new("  ")),
-                        Version::new(StringValue::new("system"), Whitespace::new("    ")),
-                    ]
-                ),
+            Line::ToolDefinition {
+                name: Identifier::new("nodejs"),
+                versions: Versions::new(vec![
+                    Version::new(VersionString::new("18.12"), Whitespace::new("  ")),
+                    Version::new(VersionString::new("system"), Whitespace::new("    ")),
+                ]),
                 whitespace: Some(Whitespace::new("  ")),
                 comment: Some(Unparsed::new(" foobar  "))
             },
-            Line::Definition {
-                tool: Tool::new(
-                    Identifier::new("ruby"),
-                    vec![
-                        Version::new(StringValue::new("12"), Whitespace::new("    ")),
-                        Version::new(StringValue::new("19"), Whitespace::new("       ")),
-                    ]
-                ),
+            Line::ToolDefinition {
+                name: Identifier::new("ruby"),
+                versions: Versions::new(vec![
+                    Version::new(VersionString::new("12"), Whitespace::new("    ")),
+                    Version::new(VersionString::new("19"), Whitespace::new("       ")),
+                ]),
                 whitespace: None,
                 comment: None
             },
@@ -406,11 +392,12 @@ fn it_sets_new_empty_versions() {
                 whitespace: Some(Whitespace::new("   ")),
                 comment: Some(Unparsed::new("# foo ## bar "))
             },
-            Line::Definition {
-                tool: Tool::new(
-                    Identifier::new("rust"),
-                    vec![Version::new(StringValue::new("4"), Whitespace::new(" ")),]
-                ),
+            Line::ToolDefinition {
+                name: Identifier::new("rust"),
+                versions: Versions::new(vec![Version::new(
+                    VersionString::new("4"),
+                    Whitespace::new(" ")
+                ),]),
                 whitespace: Some(Whitespace::new("      ")),
                 comment: None
             },
@@ -453,14 +440,12 @@ fn it_sets_new_empty_versions() {
                 },
                 unparsed: Unparsed::new("rust"),
             },
-            Line::Definition {
-                tool: Tool::new(
-                    Identifier::new("lua"),
-                    vec![
-                        Version::new(StringValue::new("19"), Whitespace::new(" ")),
-                        Version::new(StringValue::new("20"), Whitespace::new("      ")),
-                    ]
-                ),
+            Line::ToolDefinition {
+                name: Identifier::new("lua"),
+                versions: Versions::new(vec![
+                    Version::new(VersionString::new("19"), Whitespace::new(" ")),
+                    Version::new(VersionString::new("20"), Whitespace::new("      ")),
+                ]),
                 whitespace: None,
                 comment: Some(Unparsed::new("ay"))
             },
@@ -487,14 +472,12 @@ fn it_removes_versions() {
     assert_eq!(
         result,
         AST::new(vec![
-            Line::Definition {
-                tool: Tool::new(
-                    Identifier::new("nodejs"),
-                    vec![
-                        Version::new(StringValue::new("18.12"), Whitespace::new("  ")),
-                        Version::new(StringValue::new("system"), Whitespace::new("    ")),
-                    ]
-                ),
+            Line::ToolDefinition {
+                name: Identifier::new("nodejs"),
+                versions: Versions::new(vec![
+                    Version::new(VersionString::new("18.12"), Whitespace::new("  ")),
+                    Version::new(VersionString::new("system"), Whitespace::new("    ")),
+                ]),
                 whitespace: Some(Whitespace::new("  ")),
                 comment: Some(Unparsed::new(" foobar  "))
             },
@@ -502,11 +485,12 @@ fn it_removes_versions() {
                 whitespace: Some(Whitespace::new("   ")),
                 comment: Some(Unparsed::new("# foo ## bar "))
             },
-            Line::Definition {
-                tool: Tool::new(
-                    Identifier::new("rust"),
-                    vec![Version::new(StringValue::new("4"), Whitespace::new(" ")),]
-                ),
+            Line::ToolDefinition {
+                name: Identifier::new("rust"),
+                versions: Versions::new(vec![Version::new(
+                    VersionString::new("4"),
+                    Whitespace::new(" ")
+                ),]),
                 whitespace: Some(Whitespace::new("      ")),
                 comment: None
             },
@@ -549,14 +533,12 @@ fn it_removes_versions() {
                 },
                 unparsed: Unparsed::new("rust"),
             },
-            Line::Definition {
-                tool: Tool::new(
-                    Identifier::new("lua"),
-                    vec![
-                        Version::new(StringValue::new("19"), Whitespace::new(" ")),
-                        Version::new(StringValue::new("20"), Whitespace::new("      ")),
-                    ]
-                ),
+            Line::ToolDefinition {
+                name: Identifier::new("lua"),
+                versions: Versions::new(vec![
+                    Version::new(VersionString::new("19"), Whitespace::new(" ")),
+                    Version::new(VersionString::new("20"), Whitespace::new("      ")),
+                ]),
                 whitespace: None,
                 comment: Some(Unparsed::new("ay"))
             },
