@@ -1,5 +1,8 @@
 use std::{env, fs, path::Path};
-use tool_versions::{ast, ToolVersions};
+use tool_versions::{
+    ast::{self, Node},
+    ToolVersions,
+};
 
 #[test]
 fn it_works_with_file() {
@@ -26,23 +29,27 @@ fn it_works_with_file() {
     assert_eq!(
         tools.errors(),
         vec![
-            &ast::SyntaxError::DuplicateIdentifier("nodejs".to_string()),
+            &ast::SyntaxError::UnexpectedToken {
+                token: '+',
+                expected: "Identifier,Whitespace,Comment",
+            },
+            &ast::SyntaxError::DuplicateIdentifier(ast::Identifier::new("nodejs".to_string())),
             &ast::SyntaxError::UnexpectedToken {
                 token: 'i',
                 expected: "EOL,Comment",
             },
             &ast::SyntaxError::UnexpectedToken {
                 token: '#',
-                expected: "Version",
+                expected: "Whitespace",
             },
             &ast::SyntaxError::UnexpectedToken {
                 token: '+',
                 expected: "Whitespace",
             },
             &ast::SyntaxError::UnexpectedEOL {
-                expected: "Version",
+                expected: "Whitespace",
             },
-            &ast::SyntaxError::DuplicateIdentifier("lua".to_string()),
+            &ast::SyntaxError::DuplicateIdentifier(ast::Identifier::new("lua".to_string())),
             &ast::SyntaxError::UnexpectedEOL {
                 expected: "Version"
             }
@@ -70,7 +77,7 @@ fn it_works_with_file() {
 
     let result = fs::read_to_string(path).unwrap();
 
-    assert_eq!(result, "nodejs  8    9 10  # foobar  \nruby    13\n   ## foo ## bar \nrust 4      \n         \nnodejs      12   \n ignored \n# asda\nrust# comment\ninva+lid 20\nrust\nlua   \ngolang \n");
+    assert_eq!(result, "nodejs  8    9 10  # foobar  \nruby    13\n   ## foo ## bar \nrust 4      \n+invalid 12 \n         \nnodejs      12   \n ignored \n# asda\nrust# comment\ninva+lid 20\nrust\nlua   \ngolang \n");
 }
 
 #[test]

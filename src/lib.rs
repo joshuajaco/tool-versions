@@ -1,3 +1,4 @@
+use crate::ast::Node;
 use std::{io, path::Path};
 
 pub mod ast;
@@ -12,7 +13,7 @@ pub struct ToolVersions {
 impl ToolVersions {
     pub fn new() -> Self {
         ToolVersions {
-            ast: ast::AST(vec![]),
+            ast: ast::AST { lines: vec![] },
         }
     }
 
@@ -29,7 +30,7 @@ impl ToolVersions {
 
     pub fn errors(&self) -> Vec<&ast::SyntaxError> {
         self.ast
-            .0
+            .lines
             .iter()
             .filter_map(|line| match line {
                 ast::Line::Invalid { error, .. } => Some(error),
@@ -39,10 +40,14 @@ impl ToolVersions {
     }
 
     pub fn versions(&self, tool_name: &str) -> Option<Vec<String>> {
-        self.ast.0.iter().find_map(|line| match line {
-            ast::Line::ToolDefinition { name, versions, .. } if name.0 == tool_name => {
-                Some(versions.0.iter().map(|v| v.value.0.clone()).collect())
-            }
+        self.ast.lines.iter().find_map(|line| match line {
+            ast::Line::ToolDefinition { name, versions, .. } if name.value() == tool_name => Some(
+                versions
+                    .value()
+                    .iter()
+                    .map(|(_, v)| v.value().clone())
+                    .collect(),
+            ),
             _ => None,
         })
     }
@@ -50,10 +55,10 @@ impl ToolVersions {
     pub fn set_versions(&mut self, tool_name: &str, versions: Vec<&str>) {
         self.ast = transformer::set_versions(
             &self.ast,
-            ast::Identifier::new(tool_name),
+            ast::Identifier::new(tool_name.to_string()),
             versions
                 .iter()
-                .map(|version| ast::VersionString::new(version))
+                .map(|version| ast::Version::new(version.to_string()))
                 .collect(),
         );
     }
